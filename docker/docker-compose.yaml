@@ -1,0 +1,43 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_n8n
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: #your database root user password
+      MYSQL_DATABASE: #DB
+      MYSQL_USER: #DB user connection
+      MYSQL_PASSWORD: #DB password connection
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678" # ports to launch n8n
+    environment:
+      - DB_TYPE=mysqldb #type of DB
+      - DB_MYSQLDB_HOST=mysql
+      - DB_MYSQLDB_PORT=3306 #DB port
+      - DB_MYSQLDB_DATABASE= #DB name
+      - DB_MYSQLDB_USER= #Db user
+      - DB_MYSQLDB_PASSWORD= # DB user password
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=root #Basic Auth User
+      - N8N_BASIC_AUTH_PASSWORD=root #Basic Auth Password
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
+    depends_on:
+      - mysql
+    volumes:
+      - [path to store files]:/home/node/.n8n
+
+
+
+volumes:
+  mysql_data:
+  n8n_data:
