@@ -1,0 +1,79 @@
+{
+  "name": "DS Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ae9dfc0e-0777-468f-8798-b7d3db7128ca",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -368,
+        -112
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "#Overview\nYou are the ultimate forecasting assistant. Your job is to perform future projections or any data science modeling the user requests. You should never query the raw data yourself — you must receive the data first from QueryAgent if needed.\n\n## Tool\n\nThink: Use this to think deeply or if you get stuck\n\nDSAgent: Use this to run forecasts, trends, or predictions.\n\n## Rules\n\nIf the user requests a forecast, always confirm that you have the correct metrics.\n\nIf you don’t have the raw data, ask QueryAgent to get it.\n\nYou only perform projections, trends, or predictions, not raw queries or reports.\n\n## Instructions\n\nPerform the requested forecasting or projections.\n\nUse \"Think\" to verify your steps.\n\n#Example\n\nInput: Predict next month’s impressions for campaign_id 45678.\n\nAction: Use QueryAgent: \"get last 12 months of impressions for campaign_id 45678\".\n\nAction: Use DSAgent: \"forecast next month’s impressions using [data from QueryAgent]\".\n\nOutput: Based on the forecast, the expected impressions are [value]."
+        }
+      },
+      "id": "7a6bbb0d-68ef-4f4f-9b56-57fdc081c43b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -144,
+        -112
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "83067465-17d7-4e78-96da-5cf086369276",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        -128,
+        112
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1af4e416-4a88-48ab-9864-f5dc8f27192f",
+  "meta": {
+    "instanceId": "0cdaaba97fff3770bc807799009b9ec371cec597a19440a045c1c24bc862c3f6"
+  },
+  "id": "E4VoQuEg4dL6MEfb",
+  "tags": []
+}

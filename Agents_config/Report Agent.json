@@ -1,0 +1,166 @@
+{
+  "name": "Report Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "dc7f666d-11e3-42aa-8a8d-45a210151146",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        320,
+        -208
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-06-17",
+        "options": {}
+      },
+      "id": "60521d9f-2b19-4ae5-ba39-ce7496fe6eff",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        432,
+        80
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FbGWDOcJQDTG65ug",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "76ca5958-f40a-4610-8335-dc0510fdba67",
+      "name": "Think",
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "position": [
+        576,
+        112
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "description": "=Use this tool to generate a file, send the data from the Agent Report and the format ",
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "rhjPOUDUdu6KUWak",
+          "cachedResultName": "Generate File"
+        },
+        "workflowInputs": {
+          "value": {},
+          "schema": [],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "id": "60fd82c7-5c02-476f-be6a-c2bb6063f4d2",
+      "name": "Generate Report",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        1008,
+        112
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "options": {
+          "systemMessage": "=#Overview\nYou are the ultimate reporting assistant. Your job is to prepare the data recieved  in the format requested, and return the file generated with the file name mentioned. You should never do raw queries or forecasting yourself — you must receive the data first.\n\n## Tool\n\nThink: Use this to think deeply or if you get stuck\nGenerate Report: Use this too to generate the file, you need to pass the data, format and file name\n\n## Rules\n\nIf the user requests a file or report, make sure you have the required data.\n\nIf you don’t have the data, ask QueryAgent first.\n\nOnly generate the requested output format, no extra analysis.\n\n## Instructions\n\nCreate the requested report or file.\n\nUse \"Think\" to verify the file includes all required data.\nUse \"Generate Report\" to generate the file\n\n#Example\n\nInput: Export impressions, clicks, and spend for campaign_name ‘SpringSale’ as Excel file.\n\nAction: Use QueryAgent: \"get impressions, clicks, and spend from campaigns where campaign_name = ‘SpringSale’\".\n\nAction: Use ReportAgent: \"generate Excel file with [queried data]\".\n\nOutput: The report is ready. Download it here: [Excel file link]."
+        }
+      },
+      "id": "2f389cac-79f1-4088-b0a6-629eb54770af",
+      "name": "Agent report",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        688,
+        -208
+      ],
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "format": "csv",
+          "output": "Here’s the data: [{ 'date': '2025-06-02 ', 'impressions':4437},{ 'date': '2025-06-01 ', 'impressions':876617},{ 'date': '2025-05-31 ', 'impressions':1017733},{ 'date': '2025-05-30 ', 'impressions':926442},{ 'date': '2025-05-29 ', 'impressions':882977},{ 'date': '2025-05-28 ', 'impressions':847082},{ 'date': '2025-05-27 ', 'impressions':858931},{ 'date': '2025-05-26 ', 'impressions':869218},{ 'date': '2025-05-25 ', 'impressions':846126},{ 'date': '2025-05-24 ', 'impressions':900721}",
+          "file_name": "TestFile"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent report",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent report": {
+      "main": [
+        []
+      ]
+    },
+    "Generate Report": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent report",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Agent report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7d2605d1-f05a-454a-9d23-95beb6d02b83",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cdaaba97fff3770bc807799009b9ec371cec597a19440a045c1c24bc862c3f6"
+  },
+  "id": "11QbwSXdPaYHqIaz",
+  "tags": []
+}

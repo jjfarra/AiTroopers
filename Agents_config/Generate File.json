@@ -1,0 +1,338 @@
+{
+  "name": "Generate File",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        16,
+        288
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-06-17",
+        "options": {}
+      },
+      "id": "e084fb9f-7211-4f09-b4b7-76cf21da76b8",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        224,
+        512
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FbGWDOcJQDTG65ug",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-06-17",
+        "options": {}
+      },
+      "id": "5c383eef-c298-4c6f-bcbb-9934191b2fe8",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        560,
+        752
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FbGWDOcJQDTG65ug",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "=extract the format and the file name from  {{ $json.query }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "format",
+              "description": "csv or xlsx",
+              "required": true
+            },
+            {
+              "name": "file_name",
+              "description": "the file name in the message",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d7d2021d-6200-4b7d-8164-f978492f5a16",
+      "name": "Format",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        288,
+        304
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "text": "=From {{$('When Executed by Another Workflow').item.json.query }} extract the data inside the [], and export as {{ $('Format').item.json.output.format}} format",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "data",
+              "type": "=set",
+              "description": "Data available in the messae",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "19b21522-d93f-43f4-8847-089d229e3d33",
+      "name": "Data",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        544,
+        544
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "options": {
+          "fileName": "={{ $('Format').item.json.output.file_name }}"
+        }
+      },
+      "id": "a6bd42b9-f323-4db2-9d49-0031b32e7fde",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        1216,
+        288
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "={{ $('Data').item.json.output.data }}",
+        "options": {
+          "fileName": "={{ $('Format').item.json.output.file_name }}"
+        }
+      },
+      "id": "76da7be0-7c13-4231-a7e7-2733e64d1e66",
+      "name": "Convert to File1",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        1216,
+        496
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/home/node/{{ $('Format').item.json.output.file_name }}.{{ $('Format').item.json.output.format }}",
+        "options": {}
+      },
+      "id": "739cda96-7d30-48b3-8e92-96eaa22d6d62",
+      "name": "Read/Write Files from Disk",
+      "type": "n8n-nodes-base.readWriteFile",
+      "position": [
+        1552,
+        368
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "8afdd89f-adac-447f-b89b-b41848151add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $('Format').item.json.output.format}}",
+                    "rightValue": "csv"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "183ccf2d-24f5-40d3-ba37-11357d9eb74d",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $('Format').item.json.output.format}}",
+                    "rightValue": "xlsx"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d0a05d75-cdf6-443d-877e-de53260706be",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        928,
+        320
+      ],
+      "typeVersion": 3.2
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "Here’s the data: [{ 'date': '2025-06-02 ', 'impressions':4437},{ 'date': '2025-06-01 ', 'impressions':876617},{ 'date': '2025-05-31 ', 'impressions':1017733},{ 'date': '2025-05-30 ', 'impressions':926442},{ 'date': '2025-05-29 ', 'impressions':882977},{ 'date': '2025-05-28 ', 'impressions':847082},{ 'date': '2025-05-27 ', 'impressions':858931},{ 'date': '2025-05-26 ', 'impressions':869218},{ 'date': '2025-05-25 ', 'impressions':846126},{ 'date': '2025-05-24 ', 'impressions':900721}, the format is csv and the file_name is 'TestFile"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Data": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Format",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5edacedb-86e0-4258-bc76-1664b721eab8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cdaaba97fff3770bc807799009b9ec371cec597a19440a045c1c24bc862c3f6"
+  },
+  "id": "rhjPOUDUdu6KUWak",
+  "tags": []
+}

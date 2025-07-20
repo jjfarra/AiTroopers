@@ -21,7 +21,7 @@ if "processing" not in st.session_state:
 
 session_id = st.session_state.session_id
 
-st.title("💬 Chat with Webhook Assistant")
+st.title("💬 Chat with InsightNow")
 st.caption(f"Session ID: {session_id}")
 
 
@@ -34,7 +34,8 @@ def get_webhook_response(message):
             timeout=60  # Increased to 60 seconds
         )
         response.raise_for_status()
-        return response.json().get("reply", response.text)
+        response_json = response.json()
+        return response_json[0]['output']['reply']
     except requests.exceptions.Timeout:
         return "⏰ Webhook took too long to respond (more than 60 seconds)"
     except Exception as e:

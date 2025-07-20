@@ -1,0 +1,364 @@
+{
+  "name": "QueryAgent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "d3c15664-1892-4ced-b596-628481275886",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -400,
+        0
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Information Extractor').item.json.output.query }}",
+        "options": {
+          "systemMessage": "=#Overview\nYou are the ultimate database assistant. Your job is to execute the query recieved and retrieve all data. You should never do any forecasting, data science analysis, or generate reports — only get the raw data.\n\n## Tool\n\nThink: Use this to think deeply or if you get stuck, and if the query is correct\n\nRetrieve Info: Use this tool to get the data from DB, you need to send a SQL query\n\n## Rules\n\nYou must receive clear instructions on what tables, fields, and filters to use.\n\nVerify if the query recieved should start with SELECT if not use think to fix it\n## Instructions\n\nUse \"Think\" to verify your query is correct.\n\nAlways query the database exactly as needed.\n\n\n#Example\n\nInput: Get total revenue and clicks for campaign_id 12345 and 67890.\n\nAction: Use QueryAgent: \"retrieve total revenue and clicks from campaigns where campaign_id is in (12345, 67890)\".\n\nOutput: Here’s the data: [queried data]."
+        }
+      },
+      "id": "adf338f6-44f4-46b4-856e-90bdf53250eb",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        576,
+        0
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "id": "c59cccfa-0106-4a1f-9d75-76b3ccd1b360",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        416,
+        256
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FbGWDOcJQDTG65ug",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.query }}",
+        "options": {
+          "systemMessage": "=You are the ultimate database assistant. Your job is to identify which table or tables we need to use to return the data and build a SQL query . You should never do any forecasting, data science analysis, or generate reports — only build a SQL query with the correct table. You should verify if the query created is correct and if the table exists.\n\n## Tool\nThink: Use this to think deeply or if you get stuck.\nRead Schemas: Use this tool to get the schema from all tables and select which you need to use and to confirm if the table found exists.\nCheck Query: Use this tool to run the query if it works pass to return the query, if you got an error should try again and fix the query\n## Rules\n\nUse 'Read Schemas' to confirm if the table exists.\nUse 'Check Query' to verify if the query created works.\n"
+        }
+      },
+      "id": "6cf62227-dcb7-49ab-bede-311090399544",
+      "name": "AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -192,
+        0
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "id": "4754a7b8-179e-4be5-8de9-63a100d15f85",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        -368,
+        240
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FbGWDOcJQDTG65ug",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "be2be5d4-948a-4678-bab4-1e8d67d9ee4c",
+      "name": "Think",
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "position": [
+        -256,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "07fd6ed9-9bf1-4076-aaa8-a9b54c0ab7fc",
+      "name": "Think1",
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "position": [
+        544,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE        FROM INFORMATION_SCHEMA.COLUMNS        WHERE TABLE_SCHEMA = DATABASE()",
+        "options": {}
+      },
+      "id": "224b9923-73a1-4a0e-bd54-01849960ab3e",
+      "name": "Read Schemas",
+      "type": "n8n-nodes-base.mySqlTool",
+      "position": [
+        -112,
+        272
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "8wcwzTfx7XZcDFio",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $('Information Extractor').item.json.output.query }}",
+        "options": {}
+      },
+      "id": "1e2a107c-2ec6-4443-a5e5-f1ff79d86f66",
+      "name": "Retrieve Info",
+      "type": "n8n-nodes-base.mySqlTool",
+      "position": [
+        720,
+        256
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "8wcwzTfx7XZcDFio",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI(\"Table\")}}",
+        "options": {}
+      },
+      "id": "710caeef-9186-4408-9273-64e112572ceb",
+      "name": "Check Query",
+      "type": "n8n-nodes-base.mySqlTool",
+      "position": [
+        32,
+        272
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "8wcwzTfx7XZcDFio",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "query",
+              "description": "sql query"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "70a21a07-77f3-46f0-928a-2a3ba151e638",
+      "name": "Information Extractor",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        160,
+        0
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-06-17",
+        "options": {}
+      },
+      "id": "39a5f0d8-e5b9-4b91-b0d8-850711e8ae62",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        144,
+        256
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FbGWDOcJQDTG65ug",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "retrieve campaigns from advertiser DINOCO"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Query": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Schemas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5bdcd45e-869a-4b85-b266-6668260f2216",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cdaaba97fff3770bc807799009b9ec371cec597a19440a045c1c24bc862c3f6"
+  },
+  "id": "yfl5S85c30bcF2lo",
+  "tags": []
+}
